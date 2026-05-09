@@ -8,7 +8,7 @@ import type { Json } from "./database.types";
 
 const USER_ID = "default_user";
 
-function getTodayKey(): string {
+export function getTodayKey(): string {
   const d = new Date();
   const yyyy = d.getFullYear();
   const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -16,7 +16,7 @@ function getTodayKey(): string {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-function getTomorrowKey(): string {
+export function getTomorrowKey(): string {
   const d = new Date();
   d.setDate(d.getDate() + 1);
   const yyyy = d.getFullYear();

@@ -6,9 +6,9 @@ import {
   getOrCreateTodayRecord,
   saveTodayTasks,
   getRecord,
+  getTodayKey,
 } from "@/lib/cloudStorage";
 import type { DailyRecord } from "@/lib/types";
-import { getTodayKey } from "@/lib/storage";
 
 export default function TodayPage() {
   const [mounted, setMounted] = useState(false);

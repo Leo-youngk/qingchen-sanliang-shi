@@ -1,11 +1,12 @@
 // ============================================================
-// 归位 — Supabase 云端存储工具函数
+// 归位 — Supabase 云端存储工具函数（个人使用，无登录）
 // ============================================================
 
 import { supabase } from "./supabase";
 import type { DailyRecord, PauseRecord, ActionRecord, TomorrowPreview } from "./types";
 
 const USER_ID = "default_user";
+const TABLE_NAME = "guiwei_daily_records";
 
 export function getTodayKey(): string {
   const d = new Date();
@@ -38,7 +39,7 @@ function parseRecord(row: any): DailyRecord {
 
 export async function getRecord(dateKey: string): Promise<DailyRecord | null> {
   const { data, error } = await supabase
-    .from("daily_records")
+    .from(TABLE_NAME)
     .select("*")
     .eq("user_id", USER_ID)
     .eq("date", dateKey)
@@ -55,7 +56,7 @@ export async function getOrCreateTodayRecord(): Promise<DailyRecord> {
 
   const now = new Date().toISOString();
   const { data, error } = await supabase
-    .from("daily_records")
+    .from(TABLE_NAME)
     .insert({
       user_id: USER_ID,
       date: todayKey,
@@ -82,7 +83,7 @@ export async function saveTodayTasks(tasks: string[]): Promise<DailyRecord> {
 
   if (existing) {
     const { data, error } = await supabase
-      .from("daily_records")
+      .from(TABLE_NAME)
       .update({
         top_three_tasks: tasks,
         updated_at: now,
@@ -96,7 +97,7 @@ export async function saveTodayTasks(tasks: string[]): Promise<DailyRecord> {
     return parseRecord(data);
   } else {
     const { data, error } = await supabase
-      .from("daily_records")
+      .from(TABLE_NAME)
       .insert({
         user_id: USER_ID,
         date: todayKey,
@@ -128,7 +129,7 @@ export async function addPauseRecord(choice: "continue" | "switch"): Promise<Dai
   if (existing) {
     const updatedPauses = [...existing.pauses, pause];
     const { data, error } = await supabase
-      .from("daily_records")
+      .from(TABLE_NAME)
       .update({ pauses: updatedPauses, updated_at: now })
       .eq("user_id", USER_ID)
       .eq("date", todayKey)
@@ -139,7 +140,7 @@ export async function addPauseRecord(choice: "continue" | "switch"): Promise<Dai
     return parseRecord(data);
   } else {
     const { data, error } = await supabase
-      .from("daily_records")
+      .from(TABLE_NAME)
       .insert({
         user_id: USER_ID,
         date: todayKey,
@@ -173,7 +174,7 @@ export async function addActionRecord(
   if (existing) {
     const updatedActions = [...existing.actions, actionRecord];
     const { data, error } = await supabase
-      .from("daily_records")
+      .from(TABLE_NAME)
       .update({ actions: updatedActions, updated_at: now })
       .eq("user_id", USER_ID)
       .eq("date", todayKey)
@@ -184,7 +185,7 @@ export async function addActionRecord(
     return parseRecord(data);
   } else {
     const { data, error } = await supabase
-      .from("daily_records")
+      .from(TABLE_NAME)
       .insert({
         user_id: USER_ID,
         date: todayKey,
@@ -215,13 +216,13 @@ export async function saveTomorrowPreview(preview: TomorrowPreview): Promise<voi
 
   if (existing) {
     await supabase
-      .from("daily_records")
+      .from(TABLE_NAME)
       .update({ preview_for_tomorrow: fullPreview, updated_at: now })
       .eq("user_id", USER_ID)
       .eq("date", todayKey);
   } else {
     await supabase
-      .from("daily_records")
+      .from(TABLE_NAME)
       .insert({
         user_id: USER_ID,
         date: todayKey,
@@ -237,7 +238,7 @@ export async function saveTomorrowPreview(preview: TomorrowPreview): Promise<voi
 
 export async function getPreviewForDate(targetDate: string): Promise<TomorrowPreview | null> {
   const { data, error } = await supabase
-    .from("daily_records")
+    .from(TABLE_NAME)
     .select("preview_for_tomorrow, date")
     .eq("user_id", USER_ID)
     .not("preview_for_tomorrow", "is", null);
@@ -255,7 +256,7 @@ export async function getPreviewForDate(targetDate: string): Promise<TomorrowPre
 
 export async function getAllRecords(): Promise<DailyRecord[]> {
   const { data, error } = await supabase
-    .from("daily_records")
+    .from(TABLE_NAME)
     .select("*")
     .eq("user_id", USER_ID)
     .order("date", { ascending: false });

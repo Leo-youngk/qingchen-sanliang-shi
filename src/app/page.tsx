@@ -2,16 +2,17 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  getTodayKey,
   getPreviewForDate,
   getOrCreateTodayRecord,
   saveTodayTasks,
   getRecord,
-} from "@/lib/storage";
+} from "@/lib/cloudStorage";
 import type { DailyRecord } from "@/lib/types";
+import { getTodayKey } from "@/lib/storage";
 
 export default function TodayPage() {
   const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [record, setRecord] = useState<DailyRecord | null>(null);
   const [tasks, setTasks] = useState(["", "", ""]);
   const [isEditing, setIsEditing] = useState(true);
@@ -20,48 +21,54 @@ export default function TodayPage() {
   useEffect(() => {
     setMounted(true);
     const todayKey = getTodayKey();
-    let todayRecord = getRecord(todayKey);
 
-    const preview = getPreviewForDate(todayKey);
-
-    if (!todayRecord) {
-      todayRecord = getOrCreateTodayRecord();
-      if (preview && preview.tomorrowTasks.some((t) => t.trim())) {
-        setTasks([
-          preview.tomorrowTasks[0] || "",
-          preview.tomorrowTasks[1] || "",
-          preview.tomorrowTasks[2] || "",
-        ]);
-        setIsEditing(true);
-      } else {
-        setIsEditing(true);
-      }
-    } else {
-      setTasks([
-        todayRecord.topThreeTasks[0] || "",
-        todayRecord.topThreeTasks[1] || "",
-        todayRecord.topThreeTasks[2] || "",
-      ]);
-      const hasTasks = todayRecord.topThreeTasks.some((t) => t.trim());
-      setIsEditing(!hasTasks);
-      setSaved(hasTasks);
-    }
-    setRecord(todayRecord);
+    Promise.all([getRecord(todayKey), getPreviewForDate(todayKey)])
+      .then(([todayRecord, preview]) => {
+        if (!todayRecord) {
+          getOrCreateTodayRecord().then((newRecord) => {
+            if (preview && preview.tomorrowTasks.some((t) => t.trim())) {
+              setTasks([
+                preview.tomorrowTasks[0] || "",
+                preview.tomorrowTasks[1] || "",
+                preview.tomorrowTasks[2] || "",
+              ]);
+            }
+            setRecord(newRecord);
+            setIsEditing(true);
+            setLoading(false);
+          });
+        } else {
+          setTasks([
+            todayRecord.topThreeTasks[0] || "",
+            todayRecord.topThreeTasks[1] || "",
+            todayRecord.topThreeTasks[2] || "",
+          ]);
+          const hasTasks = todayRecord.topThreeTasks.some((t) => t.trim());
+          setIsEditing(!hasTasks);
+          setSaved(hasTasks);
+          setRecord(todayRecord);
+          setLoading(false);
+        }
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   const handleSave = useCallback(() => {
     const filledTasks = tasks.map((t) => t.trim());
-    const updated = saveTodayTasks(filledTasks);
-    setRecord(updated);
-    setSaved(true);
-    setIsEditing(false);
+    saveTodayTasks(filledTasks)
+      .then((updated) => {
+        setRecord(updated);
+        setSaved(true);
+        setIsEditing(false);
+      })
+      .catch(console.error);
   }, [tasks]);
 
   const handleEdit = useCallback(() => {
     setIsEditing(true);
   }, []);
 
-  if (!mounted) {
+  if (!mounted || loading) {
     return <div className="min-h-[60vh]" />;
   }
 

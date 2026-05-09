@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Moon } from "lucide-react";
-import { getTomorrowKey, saveTomorrowPreview, getPreviewForDate } from "@/lib/storage";
+import { getTomorrowKey, saveTomorrowPreview, getPreviewForDate } from "@/lib/cloudStorage";
 import type { TomorrowPreview } from "@/lib/types";
 
 export default function PreviewPage() {
@@ -11,25 +11,30 @@ export default function PreviewPage() {
   const [failures, setFailures] = useState(["", "", ""]);
   const [saved, setSaved] = useState(false);
   const [isEditing, setIsEditing] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setMounted(true);
     const tomorrowKey = getTomorrowKey();
-    const existing = getPreviewForDate(tomorrowKey);
-    if (existing) {
-      setTasks([
-        existing.tomorrowTasks[0] || "",
-        existing.tomorrowTasks[1] || "",
-        existing.tomorrowTasks[2] || "",
-      ]);
-      setFailures([
-        existing.possibleFailures[0] || "",
-        existing.possibleFailures[1] || "",
-        existing.possibleFailures[2] || "",
-      ]);
-      setSaved(true);
-      setIsEditing(false);
-    }
+    getPreviewForDate(tomorrowKey)
+      .then((existing) => {
+        if (existing) {
+          setTasks([
+            existing.tomorrowTasks[0] || "",
+            existing.tomorrowTasks[1] || "",
+            existing.tomorrowTasks[2] || "",
+          ]);
+          setFailures([
+            existing.possibleFailures[0] || "",
+            existing.possibleFailures[1] || "",
+            existing.possibleFailures[2] || "",
+          ]);
+          setSaved(true);
+          setIsEditing(false);
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   const handleSave = useCallback(() => {
@@ -50,7 +55,7 @@ export default function PreviewPage() {
     setIsEditing(true);
   }, []);
 
-  if (!mounted) {
+  if (!mounted || loading) {
     return <div className="min-h-[60vh]" />;
   }
 

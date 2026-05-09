@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { ACTION_CONFIG, ActionType } from "@/lib/types";
-import { addActionRecord } from "@/lib/storage";
+import { addActionRecord } from "@/lib/cloudStorage";
 
 const VALID_TYPES: ActionType[] = ["reading", "exercise", "walking", "cleaning", "english"];
 
@@ -41,20 +41,28 @@ export default function ActionReminderPage() {
 
   const [mounted, setMounted] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const handleComplete = useCallback(() => {
+  const handleComplete = useCallback(async () => {
     if (!config) return;
-    addActionRecord({
-      type: type as ActionType,
-      label: config.label,
-      completed: true,
-      completedAt: new Date().toISOString(),
-    });
-    setIsCompleted(true);
+    setSaving(true);
+    try {
+      await addActionRecord({
+        type: type as ActionType,
+        label: config.label,
+        completed: true,
+        completedAt: new Date().toISOString(),
+      });
+      setIsCompleted(true);
+    } catch (error) {
+      console.error("Failed to save action:", error);
+    } finally {
+      setSaving(false);
+    }
   }, [config, type]);
 
   const handleSkip = useCallback(() => {
@@ -138,9 +146,10 @@ export default function ActionReminderPage() {
       <div className="w-full max-w-[300px] space-y-3.5 mt-8">
         <button
           onClick={handleComplete}
-          className="w-full py-3.5 rounded-2xl bg-[#3E5C4A] text-white font-medium tracking-widest text-[16px] hover:bg-[#3E5C4A]/90 active:scale-[0.98] transition-all"
+          disabled={saving}
+          className="w-full py-3.5 rounded-2xl bg-[#3E5C4A] text-white font-medium tracking-widest text-[16px] hover:bg-[#3E5C4A]/90 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-wait"
         >
-          我做完了
+          {saving ? "保存中..." : "我做完了"}
         </button>
         <button
           onClick={handleSkip}

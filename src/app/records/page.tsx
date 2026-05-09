@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { ScrollText, ChevronDown, ChevronUp, CheckCircle2, Circle, Sun, Moon } from "lucide-react";
-import { getAllRecords, getTodayKey } from "@/lib/storage";
+import { getAllRecords } from "@/lib/cloudStorage";
 import type { DailyRecord } from "@/lib/types";
 
 function formatDate(dateKey: string): string {
@@ -15,10 +15,16 @@ export default function RecordsPage() {
   const [mounted, setMounted] = useState(false);
   const [records, setRecords] = useState<DailyRecord[]>([]);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setMounted(true);
-    setRecords(getAllRecords());
+    getAllRecords()
+      .then((data) => {
+        setRecords(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   const toggleExpand = (id: string) => {
@@ -30,7 +36,7 @@ export default function RecordsPage() {
     });
   };
 
-  if (!mounted) {
+  if (!mounted || loading) {
     return <div className="min-h-[60vh]" />;
   }
 

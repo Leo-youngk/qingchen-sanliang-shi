@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { addPauseRecord } from "@/lib/storage";
+import { addPauseRecord } from "@/lib/cloudStorage";
 
 export default function PausePage() {
   const router = useRouter();
@@ -12,13 +12,13 @@ export default function PausePage() {
     setMounted(true);
   }, []);
 
-  const handleContinue = () => {
-    addPauseRecord("continue");
+  const handleContinue = async () => {
+    await addPauseRecord("continue");
     router.push("/");
   };
 
-  const handleSwitch = () => {
-    addPauseRecord("switch");
+  const handleSwitch = async () => {
+    await addPauseRecord("switch");
     router.push("/action");
   };
 

@@ -4,7 +4,6 @@
 
 import { supabase } from "./supabase";
 import type { DailyRecord, PauseRecord, ActionRecord, TomorrowPreview } from "./types";
-import type { Json } from "./database.types";
 
 const USER_ID = "default_user";
 
@@ -85,7 +84,7 @@ export async function saveTodayTasks(tasks: string[]): Promise<DailyRecord> {
     const { data, error } = await supabase
       .from("daily_records")
       .update({
-        top_three_tasks: tasks as unknown as Json,
+        top_three_tasks: tasks,
         updated_at: now,
       })
       .eq("user_id", USER_ID)
@@ -101,7 +100,7 @@ export async function saveTodayTasks(tasks: string[]): Promise<DailyRecord> {
       .insert({
         user_id: USER_ID,
         date: todayKey,
-        top_three_tasks: tasks as unknown as Json,
+        top_three_tasks: tasks,
         pauses: [],
         actions: [],
         created_at: now,
@@ -127,7 +126,7 @@ export async function addPauseRecord(choice: "continue" | "switch"): Promise<Dai
   const existing = await getRecord(todayKey);
 
   if (existing) {
-    const updatedPauses = [...existing.pauses, pause] as unknown as Json;
+    const updatedPauses = [...existing.pauses, pause];
     const { data, error } = await supabase
       .from("daily_records")
       .update({ pauses: updatedPauses, updated_at: now })
@@ -145,7 +144,7 @@ export async function addPauseRecord(choice: "continue" | "switch"): Promise<Dai
         user_id: USER_ID,
         date: todayKey,
         top_three_tasks: ["", "", ""],
-        pauses: [pause] as unknown as Json,
+        pauses: [pause],
         actions: [],
         created_at: now,
         updated_at: now,
@@ -172,7 +171,7 @@ export async function addActionRecord(
   const existing = await getRecord(todayKey);
 
   if (existing) {
-    const updatedActions = [...existing.actions, actionRecord] as unknown as Json;
+    const updatedActions = [...existing.actions, actionRecord];
     const { data, error } = await supabase
       .from("daily_records")
       .update({ actions: updatedActions, updated_at: now })
@@ -191,7 +190,7 @@ export async function addActionRecord(
         date: todayKey,
         top_three_tasks: ["", "", ""],
         pauses: [],
-        actions: [actionRecord] as unknown as Json,
+        actions: [actionRecord],
         created_at: now,
         updated_at: now,
       })
@@ -217,7 +216,7 @@ export async function saveTomorrowPreview(preview: TomorrowPreview): Promise<voi
   if (existing) {
     await supabase
       .from("daily_records")
-      .update({ preview_for_tomorrow: fullPreview as unknown as Json, updated_at: now })
+      .update({ preview_for_tomorrow: fullPreview, updated_at: now })
       .eq("user_id", USER_ID)
       .eq("date", todayKey);
   } else {
@@ -229,7 +228,7 @@ export async function saveTomorrowPreview(preview: TomorrowPreview): Promise<voi
         top_three_tasks: ["", "", ""],
         pauses: [],
         actions: [],
-        preview_for_tomorrow: fullPreview as unknown as Json,
+        preview_for_tomorrow: fullPreview,
         created_at: now,
         updated_at: now,
       });

@@ -8,6 +8,13 @@ import type { DailyRecord, PauseRecord, ActionRecord, TomorrowPreview } from "./
 const USER_ID = "default_user";
 const TABLE_NAME = "guiwei_daily_records";
 
+function getClient() {
+  if (!supabase) {
+    throw new Error("Supabase client not initialized. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.");
+  }
+  return supabase;
+}
+
 export function getTodayKey(): string {
   const d = new Date();
   const yyyy = d.getFullYear();
@@ -38,7 +45,7 @@ function parseRecord(row: any): DailyRecord {
 }
 
 export async function getRecord(dateKey: string): Promise<DailyRecord | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getClient()
     .from(TABLE_NAME)
     .select("*")
     .eq("user_id", USER_ID)
@@ -55,7 +62,7 @@ export async function getOrCreateTodayRecord(): Promise<DailyRecord> {
   if (existing) return existing;
 
   const now = new Date().toISOString();
-  const { data, error } = await supabase
+  const { data, error } = await getClient()
     .from(TABLE_NAME)
     .insert({
       user_id: USER_ID,
@@ -82,7 +89,7 @@ export async function saveTodayTasks(tasks: string[]): Promise<DailyRecord> {
   const existing = await getRecord(todayKey);
 
   if (existing) {
-    const { data, error } = await supabase
+    const { data, error } = await getClient()
       .from(TABLE_NAME)
       .update({
         top_three_tasks: tasks,
@@ -96,7 +103,7 @@ export async function saveTodayTasks(tasks: string[]): Promise<DailyRecord> {
     if (error || !data) throw new Error("Failed to save tasks: " + error?.message);
     return parseRecord(data);
   } else {
-    const { data, error } = await supabase
+    const { data, error } = await getClient()
       .from(TABLE_NAME)
       .insert({
         user_id: USER_ID,
@@ -128,7 +135,7 @@ export async function addPauseRecord(choice: "continue" | "switch"): Promise<Dai
 
   if (existing) {
     const updatedPauses = [...existing.pauses, pause];
-    const { data, error } = await supabase
+    const { data, error } = await getClient()
       .from(TABLE_NAME)
       .update({ pauses: updatedPauses, updated_at: now })
       .eq("user_id", USER_ID)
@@ -139,7 +146,7 @@ export async function addPauseRecord(choice: "continue" | "switch"): Promise<Dai
     if (error || !data) throw new Error("Failed to add pause: " + error?.message);
     return parseRecord(data);
   } else {
-    const { data, error } = await supabase
+    const { data, error } = await getClient()
       .from(TABLE_NAME)
       .insert({
         user_id: USER_ID,
@@ -173,7 +180,7 @@ export async function addActionRecord(
 
   if (existing) {
     const updatedActions = [...existing.actions, actionRecord];
-    const { data, error } = await supabase
+    const { data, error } = await getClient()
       .from(TABLE_NAME)
       .update({ actions: updatedActions, updated_at: now })
       .eq("user_id", USER_ID)
@@ -184,7 +191,7 @@ export async function addActionRecord(
     if (error || !data) throw new Error("Failed to add action: " + error?.message);
     return parseRecord(data);
   } else {
-    const { data, error } = await supabase
+    const { data, error } = await getClient()
       .from(TABLE_NAME)
       .insert({
         user_id: USER_ID,
@@ -215,13 +222,13 @@ export async function saveTomorrowPreview(preview: TomorrowPreview): Promise<voi
   const existing = await getRecord(todayKey);
 
   if (existing) {
-    await supabase
+    await getClient()
       .from(TABLE_NAME)
       .update({ preview_for_tomorrow: fullPreview, updated_at: now })
       .eq("user_id", USER_ID)
       .eq("date", todayKey);
   } else {
-    await supabase
+    await getClient()
       .from(TABLE_NAME)
       .insert({
         user_id: USER_ID,
@@ -237,7 +244,7 @@ export async function saveTomorrowPreview(preview: TomorrowPreview): Promise<voi
 }
 
 export async function getPreviewForDate(targetDate: string): Promise<TomorrowPreview | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getClient()
     .from(TABLE_NAME)
     .select("preview_for_tomorrow, date")
     .eq("user_id", USER_ID)
@@ -255,7 +262,7 @@ export async function getPreviewForDate(targetDate: string): Promise<TomorrowPre
 }
 
 export async function getAllRecords(): Promise<DailyRecord[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getClient()
     .from(TABLE_NAME)
     .select("*")
     .eq("user_id", USER_ID)

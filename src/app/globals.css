@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-bg: #F6F1E8;
+  --color-card: #FFFCF6;
+  --color-text-primary: #20201D;
+  --color-text-secondary: #7A756B;
+  --color-accent: #3E5C4A;
+  --color-accent-soft: #A58E6F;
+  --color-line: #E4DCCF;
+  --color-night-bg: #1F2522;
+  --color-night-card: #2A312D;
+  --color-night-text: #F4EFE6;
+  --color-night-secondary: #AFA89B;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Noto Sans SC", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100%;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 输入框样式 */
+input::placeholder {
+  color: #B8B0A4;
+}
+
+input:focus {
+  outline: none;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #D4CEC3;
+  border-radius: 2px;
+}

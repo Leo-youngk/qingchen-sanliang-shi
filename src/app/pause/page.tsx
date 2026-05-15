@@ -1,17 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { addPauseRecord } from "@/lib/cloudStorage";
 
 export default function PausePage() {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const handleContinue = async () => {
     await addPauseRecord("continue");
     router.push("/");
@@ -21,10 +15,6 @@ export default function PausePage() {
     await addPauseRecord("switch");
     router.push("/action");
   };
-
-  if (!mounted) {
-    return <div className="min-h-[60vh]" />;
-  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] text-center px-4">

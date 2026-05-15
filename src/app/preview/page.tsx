@@ -11,7 +11,6 @@ export default function PreviewPage() {
   const [failures, setFailures] = useState(["", "", ""]);
   const [saved, setSaved] = useState(false);
   const [isEditing, setIsEditing] = useState(true);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setMounted(true);
@@ -32,9 +31,10 @@ export default function PreviewPage() {
           setSaved(true);
           setIsEditing(false);
         }
-        setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        // Silent fail — show empty edit form
+      });
   }, []);
 
   const handleSave = useCallback(() => {
@@ -55,7 +55,7 @@ export default function PreviewPage() {
     setIsEditing(true);
   }, []);
 
-  if (!mounted || loading) {
+  if (!mounted) {
     return <div className="min-h-[60vh]" />;
   }
 

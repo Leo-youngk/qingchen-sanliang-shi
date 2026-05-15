@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { ACTION_CONFIG, ActionType } from "@/lib/types";
@@ -39,13 +39,8 @@ export default function ActionReminderPage() {
   const config = isValid ? ACTION_CONFIG[type as ActionType] : null;
   const messages = isValid ? ACTION_MESSAGES[type as ActionType] : null;
 
-  const [mounted, setMounted] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const handleComplete = useCallback(async () => {
     if (!config) return;
@@ -72,10 +67,6 @@ export default function ActionReminderPage() {
   const handleBackToHome = useCallback(() => {
     router.push("/");
   }, [router]);
-
-  if (!mounted) {
-    return <div className="min-h-[60vh]" />;
-  }
 
   if (!isValid || !config || !messages) {
     return (

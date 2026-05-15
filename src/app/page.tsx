@@ -12,7 +12,6 @@ import type { DailyRecord } from "@/lib/types";
 
 export default function TodayPage() {
   const [mounted, setMounted] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [record, setRecord] = useState<DailyRecord | null>(null);
   const [tasks, setTasks] = useState(["", "", ""]);
   const [isEditing, setIsEditing] = useState(true);
@@ -24,20 +23,7 @@ export default function TodayPage() {
 
     Promise.all([getRecord(todayKey), getPreviewForDate(todayKey)])
       .then(([todayRecord, preview]) => {
-        if (!todayRecord) {
-          getOrCreateTodayRecord().then((newRecord) => {
-            if (preview && preview.tomorrowTasks.some((t) => t.trim())) {
-              setTasks([
-                preview.tomorrowTasks[0] || "",
-                preview.tomorrowTasks[1] || "",
-                preview.tomorrowTasks[2] || "",
-              ]);
-            }
-            setRecord(newRecord);
-            setIsEditing(true);
-            setLoading(false);
-          });
-        } else {
+        if (todayRecord) {
           setTasks([
             todayRecord.topThreeTasks[0] || "",
             todayRecord.topThreeTasks[1] || "",
@@ -47,10 +33,26 @@ export default function TodayPage() {
           setIsEditing(!hasTasks);
           setSaved(hasTasks);
           setRecord(todayRecord);
-          setLoading(false);
+        } else {
+          // No record yet — pre-fill from yesterday's preview if available
+          if (preview && preview.tomorrowTasks.some((t) => t.trim())) {
+            setTasks([
+              preview.tomorrowTasks[0] || "",
+              preview.tomorrowTasks[1] || "",
+              preview.tomorrowTasks[2] || "",
+            ]);
+          }
+          // Create record in background, don't block UI
+          getOrCreateTodayRecord()
+            .then((newRecord) => setRecord(newRecord))
+            .catch(() => {
+              // Silent fail — user can still use the form, save will create the record
+            });
         }
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        // Supabase unreachable — show empty edit form, let user proceed
+      });
   }, []);
 
   const handleSave = useCallback(() => {
@@ -68,7 +70,8 @@ export default function TodayPage() {
     setIsEditing(true);
   }, []);
 
-  if (!mounted || loading) {
+  // Only block render until mounted (prevents hydration mismatch for date string)
+  if (!mounted) {
     return <div className="min-h-[60vh]" />;
   }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BookOpen, Dumbbell, Footprints, Home, Languages } from "lucide-react";
 import { ACTION_CONFIG } from "@/lib/types";
@@ -16,16 +16,6 @@ const actionIcons: Record<ActionType, React.ComponentType<{ size?: number; strok
 
 export default function ActionPage() {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return <div className="min-h-[60vh]" />;
-  }
-
   return (
     <div className="space-y-7 pt-2">
       <div className="mb-8">

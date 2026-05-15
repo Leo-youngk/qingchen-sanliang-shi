@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { ScrollText, ChevronDown, ChevronUp, CheckCircle2, Circle, Sun, Moon } from "lucide-react";
 import { getAllRecords } from "@/lib/cloudStorage";
 import type { DailyRecord } from "@/lib/types";
@@ -12,12 +12,10 @@ function formatDate(dateKey: string): string {
 }
 
 export default function RecordsPage() {
-  const [mounted, setMounted] = useState(false);
   const [records, setRecords] = useState<DailyRecord[]>([]);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    setMounted(true);
     getAllRecords()
       .then((data) => {
         setRecords(data);
@@ -35,10 +33,6 @@ export default function RecordsPage() {
       return next;
     });
   };
-
-  if (!mounted) {
-    return <div className="min-h-[60vh]" />;
-  }
 
   return (
     <div className="space-y-6">

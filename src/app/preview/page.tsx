@@ -1,19 +1,17 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Moon } from "lucide-react";
 import { getTomorrowKey, saveTomorrowPreview, getPreviewForDate } from "@/lib/cloudStorage";
 import type { TomorrowPreview } from "@/lib/types";
 
 export default function PreviewPage() {
-  const [mounted, setMounted] = useState(false);
   const [tasks, setTasks] = useState(["", "", ""]);
   const [failures, setFailures] = useState(["", "", ""]);
   const [saved, setSaved] = useState(false);
   const [isEditing, setIsEditing] = useState(true);
 
   useEffect(() => {
-    setMounted(true);
     const tomorrowKey = getTomorrowKey();
     getPreviewForDate(tomorrowKey)
       .then((existing) => {
@@ -54,10 +52,6 @@ export default function PreviewPage() {
   const handleEdit = useCallback(() => {
     setIsEditing(true);
   }, []);
-
-  if (!mounted) {
-    return <div className="min-h-[60vh]" />;
-  }
 
   return (
     <div className="animate-in fade-in duration-300 space-y-8">

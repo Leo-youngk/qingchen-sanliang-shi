@@ -70,14 +70,11 @@ export default function TodayPage() {
     setIsEditing(true);
   }, []);
 
-  // Only block render until mounted (prevents hydration mismatch for date string)
-  if (!mounted) {
-    return <div className="min-h-[60vh]" />;
-  }
-
   const d = new Date();
   const weekDays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
-  const dateStr = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${weekDays[d.getDay()]}`;
+  const dateStr = mounted
+    ? `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${weekDays[d.getDay()]}`
+    : "";
 
   const pauseCount = record?.pauses.length ?? 0;
   const switchCount =
@@ -95,7 +92,7 @@ export default function TodayPage() {
             归位
           </span>
         </div>
-        <span className="text-sm text-[#7A756B] tracking-wide">{dateStr}</span>
+        <span suppressHydrationWarning className="text-sm text-[#7A756B] tracking-wide">{dateStr}</span>
       </div>
 
       {/* 核心问题 */}
